@@ -94,7 +94,7 @@ public class Main extends InputAdapter implements ApplicationListener {
     @Override
     public void create () {
         // load the koala frames, split them, and assign them to Animations
-        koalaTexture = new Texture("koalio.png");
+        koalaTexture = new Texture("mario.png");
         TextureRegion[] regions = TextureRegion.split(koalaTexture, 18, 26)[0];
         stand = new Animation<TextureRegion>(0, regions[0]);
         jump = new Animation<TextureRegion>(0, regions[1]);
