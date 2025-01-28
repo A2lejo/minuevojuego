@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="212" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="1">
+ <tileset firstgid="1" name="tileSet-hd" tilewidth="16" tileheight="16" tilecount="924" columns="33">
+  <image source="tileSet.png" width="528" height="448"/>
+ </tileset>
+ <layer id="1" name="background" width="212" height="20">
+  <properties>
+   <property name="@Description" value=""/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt120SgiAQgGGUY5W/qst0CTl69sPRGEzkQxZ5nxmmYhKXhcVSCgBkM7p0BLgae0+NemmuvtHxfZurD6hB6jPWpz5ctbY3Bs8CtCiknrb6WtDaOfHolXpO7dWnHdeVx2+ftPwejWfQS3P1zf3GqqNB/76PjVlaHlO7+vxKkpRbVy38qw+77tavMfMKuTY2j2eug6Q1z8kk2Auh95Qgpp7mz7HPp1Bnr5mkdVuTGlcJPuuUI19m9Wyxf9cdqaetvjP45iVVLbBvj5N8Du2RHHfNebXVOI8aYq4hxhxK/NdBGdLOQQmxSIghVKnYU9235txLJK2+4SflmrEHAAAAAACtuXVK3ac2dLLGDr0253wA4Czv0gEAKO4DKK0zMg==
+  </data>
+ </layer>
+ <layer id="2" name="walls" width="212" height="20">
+  <properties>
+   <property name="@Description" value=""/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztmN0KwyAMRvsWo++z3e++r9KHH4UOROZM4r+eA99FwTQmNRq7bQAAAAAAAAAAAAAAMs5bAJAO9QQA0B+Ho4enFTg8AczI6Wl09ltWO4ttSXrae0baD1c6q2BeStVcqLebsWb+nXG/4p81D7mQ5GeUc2IV3PWfusalPWONOrLGorFbaT/w10hsbCn/Ne8i2v0/NFZq798xcpw9qfeXWCyhOWlzYIlPE5Pre9/kebnG5/7fpf2ukvHSc3Wl/g7aQp8HK2HtUfy+OWefE3r3KP90c8895V2j5M8aY2y85Vtobd5KSWyft77Pr4JyKekn5LeWn9rxtY5bko/ecnOpRD2VrqEe1lstn63iax23JB+95ebSB2cpoVA=
+  </data>
+ </layer>
+</map>

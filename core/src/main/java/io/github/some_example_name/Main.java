@@ -66,7 +66,7 @@ public class Main extends InputAdapter implements ApplicationListener {
         gameOver = false;
 
         // reset the map
-        map = new TmxMapLoader().load("level1.tmx");
+        map = new TmxMapLoader().load("level5.tmx");
         renderer.setMap(map);
     }
 
@@ -108,7 +108,7 @@ public class Main extends InputAdapter implements ApplicationListener {
         Koala.HEIGHT = 1 / 16f * regions[0].getRegionHeight();
 
         // load the map, set the unit scale to 1/16 (1 unit == 16 pixels)
-        map = new TmxMapLoader().load("level1.tmx");
+        map = new TmxMapLoader().load("level5.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, 1 / 16f);
 
         // create an orthographic camera, shows us 30x20 units of the world
