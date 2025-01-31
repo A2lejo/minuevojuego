@@ -21,9 +21,12 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.ScreenUtils;
+
+
 
 /** Super Mario Brothers-like very basic platformer, using a tile map built using <a href="https://www.mapeditor.org/">Tiled</a> and a
  * tileset and sprites by <a href="http://www.vickiwenderlich.com/">Vicky Wenderlich</a></p>
@@ -32,6 +35,15 @@ import com.badlogic.gdx.utils.ScreenUtils;
  * @author mzechner */
 public class Main extends InputAdapter implements ApplicationListener {
     /** The player character, has state and state time, */
+    private Texture leftButtonTexture;
+    private Texture rightButtonTexture;
+    private Texture jumpButtonTexture;
+    private Rectangle leftButtonBounds;
+    private Rectangle rightButtonBounds;
+    private Rectangle jumpButtonBounds;
+    private OrthographicCamera uiCamera;
+
+
     static class Koala {
         static float WIDTH;
         static float HEIGHT;
@@ -93,6 +105,32 @@ public class Main extends InputAdapter implements ApplicationListener {
 
     @Override
     public void create () {
+
+        // Crear cámara para la UI (pantalla estática)
+        uiCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        uiCamera.position.set(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f, 0);
+        uiCamera.update();
+
+
+        leftButtonTexture = new Texture("izquierda.png");
+        rightButtonTexture = new Texture("derecha.png");
+        jumpButtonTexture = new Texture("arriba.png");
+
+        float buttonSize = 2.0f;
+        float padding = 3.0f;
+
+        //leftButtonBounds = new Rectangle(-3*padding, padding, buttonSize, buttonSize);
+        //rightButtonBounds = new Rectangle(padding -7, padding, buttonSize, buttonSize);
+        //jumpButtonBounds = new Rectangle(20 - buttonSize - padding, padding, buttonSize, buttonSize);
+
+        leftButtonBounds = new Rectangle(50, 50, 150, 150);
+        rightButtonBounds = new Rectangle(250, 50, 150, 150);
+        jumpButtonBounds = new Rectangle(1800, 50, 150, 150);
+
+
+
+
+
         // load the koala frames, split them, and assign them to Animations
         koalaTexture = new Texture("mario.png");
         TextureRegion[] regions = TextureRegion.split(koalaTexture, 18, 26)[0];
@@ -100,6 +138,8 @@ public class Main extends InputAdapter implements ApplicationListener {
         jump = new Animation<TextureRegion>(0, regions[1]);
         walk = new Animation<TextureRegion>(0.15f, regions[2], regions[3], regions[4]);
         walk.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+
+
 
         // figure out the width and height of the koala for collision
         // detection and rendering by converting a koala frames pixel
@@ -146,55 +186,77 @@ public class Main extends InputAdapter implements ApplicationListener {
         // render the koala
         renderKoala(deltaTime);
 
+        renderButton();
+
         // render debug rectangles
         if (debug) renderDebug();
     }
 
+    private void renderButton() {
+        Batch batch = renderer.getBatch();
+
+        // Establecer la cámara de UI para que los botones no se muevan con la cámara del juego
+        batch.setProjectionMatrix(uiCamera.combined);
+
+        batch.begin();
+        batch.draw(leftButtonTexture, leftButtonBounds.x, leftButtonBounds.y, leftButtonBounds.width, leftButtonBounds.height);
+        batch.draw(rightButtonTexture, rightButtonBounds.x, rightButtonBounds.y, rightButtonBounds.width, rightButtonBounds.height);
+        batch.draw(jumpButtonTexture, jumpButtonBounds.x, jumpButtonBounds.y, jumpButtonBounds.width, jumpButtonBounds.height);
+        batch.end();
+    }
+
+
+
+
     private void updateKoala (float deltaTime) {
         if (deltaTime == 0) return;
-
-        if (deltaTime > 0.1f)
-            deltaTime = 0.1f;
+        if (deltaTime > 0.1f) deltaTime = 0.1f;
 
         koala.stateTime += deltaTime;
 
-        // check input and apply to velocity & state
-        if ((Gdx.input.isKeyPressed(Keys.SPACE) || isTouched(0.5f, 1)) && koala.grounded) {
-            koala.velocity.y += Koala.JUMP_VELOCITY;
+        // Obtener posición del toque en coordenadas de la UI
+        Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        uiCamera.unproject(touchPos); // Convertir coordenadas de pantalla a mundo UI
+
+        boolean moving = false; // Variable para saber si se está moviendo
+
+        // Movimiento a la izquierda (tecla o botón)
+        if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A) || leftButtonBounds.contains(touchPos.x, touchPos.y)) {
+            koala.velocity.x = -Koala.MAX_VELOCITY;
+            koala.facesRight = false;
+            moving = true;
+        }
+
+        // Movimiento a la derecha (tecla o botón)
+        if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D) || rightButtonBounds.contains(touchPos.x, touchPos.y)) {
+            koala.velocity.x = Koala.MAX_VELOCITY;
+            koala.facesRight = true;
+            moving = true;
+        }
+
+        // Salto (tecla o botón)
+        if ((Gdx.input.isKeyPressed(Keys.SPACE) || jumpButtonBounds.contains(touchPos.x, touchPos.y)) && koala.grounded) {
+            koala.velocity.y = Koala.JUMP_VELOCITY;
             koala.state = Koala.State.Jumping;
             koala.grounded = false;
+            moving = true;
         }
 
-        if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A) || isTouched(0, 0.25f)) {
-            koala.velocity.x = -Koala.MAX_VELOCITY;
-            if (koala.grounded) koala.state = Koala.State.Walking;
-            koala.facesRight = false;
-        }
-
-        if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D) || isTouched(0.25f, 0.5f)) {
-            koala.velocity.x = Koala.MAX_VELOCITY;
-            if (koala.grounded) koala.state = Koala.State.Walking;
-            koala.facesRight = true;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Keys.B))
-            debug = !debug;
-
-        // apply gravity if we are falling
-        koala.velocity.add(0, GRAVITY);
-
-        // clamp the velocity to the maximum, x-axis only
-        koala.velocity.x = MathUtils.clamp(koala.velocity.x,
-                -Koala.MAX_VELOCITY, Koala.MAX_VELOCITY);
-
-        // If the velocity is < 1, set it to 0 and set state to Standing
-        if (Math.abs(koala.velocity.x) < 1) {
+        // Si no hay movimiento, detener al personaje
+        if (!moving) {
             koala.velocity.x = 0;
             if (koala.grounded) koala.state = Koala.State.Standing;
+        } else if (koala.grounded) {
+            koala.state = Koala.State.Walking;
         }
 
-        // multiply by delta time so we know how far we go
-        // in this frame
+        // Aplicar gravedad
+        koala.velocity.add(0, GRAVITY);
+
+        // Limitar la velocidad en el eje X
+        koala.velocity.x = MathUtils.clamp(koala.velocity.x, -Koala.MAX_VELOCITY, Koala.MAX_VELOCITY);
+
+        // Multiplicar por deltaTime para calcular el movimiento en el frame actual
         koala.velocity.scl(deltaTime);
 
         // perform collision detection & response, on each axis, separately
@@ -274,11 +336,28 @@ public class Main extends InputAdapter implements ApplicationListener {
     private boolean isTouched (float startX, float endX) {
         // Check for touch inputs between startX and endX
         // startX/endX are given between 0 (left edge of the screen) and 1 (right edge of the screen)
-        for (int i = 0; i < 2; i++) {
-            float x = Gdx.input.getX(i) / (float)Gdx.graphics.getBackBufferWidth();
-            if (Gdx.input.isTouched(i) && (x >= startX && x <= endX)) {
-                return true;
-            }
+        //for (int i = 0; i < 2; i++) {
+          //  float x = Gdx.input.getX(i) / (float)Gdx.graphics.getBackBufferWidth();
+            //if (Gdx.input.isTouched(i) && (x >= startX && x <= endX)) {
+              //  return true;
+            //}
+        //}
+       // return false;
+        // Convertir las coordenadas de la pantalla a coordenadas del mundo usando Vector3
+        Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        camera.unproject(touchPos);
+
+        // Verificar si se tocó el botón de izquierda
+        if (leftButtonBounds.contains(touchPos.x, touchPos.y)) {
+            return true;
+        }
+        // Verificar si se tocó el botón de derecha
+        if (rightButtonBounds.contains(touchPos.x, touchPos.y)) {
+            return true;
+        }
+        // Verificar si se tocó el botón de salto
+        if (jumpButtonBounds.contains(touchPos.x, touchPos.y)) {
+            return true;
         }
         return false;
     }
